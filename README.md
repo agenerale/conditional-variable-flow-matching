@@ -7,12 +7,17 @@
 
 ## Description
 
-Conditional Flow Matching (CFM) is a fast way to train continuous normalizing flow (CNF) models. CFM is a simulation-free training objective for continuous normalizing flows that allows conditional generative modeling and speeds up training and inference. CFM's performance closes the gap between CNFs and diffusion models. To spread its use within the machine learning community, we have built a library focused on Flow Matching methods: TorchCFM. TorchCFM is a library showing how Flow Matching methods can be trained and used to deal with image generation, single-cell dynamics, tabular data and soon SO(3) data.
+Conditional Variable Flow Matching (CVFM) is a robust extension to Flow Matching for training amortized conditional continuous normalizing flows (CNF). CVFM enables the disentanglement of conditional dynamics from unpaired training data, requiring only an (x,y) pair observed at a given time.
 
 <p align="center">
-<img src="assets/169_generated_samples_otcfm.png" width="600"/>
-<img src="assets/8gaussians-to-moons.gif" />
+<img src="imgs/2-moons_to_2-moons.gif" width="600"/>
 </p>
+
+The trajectories and densities for mapping from a continuous conditioning mapping from two moons to two moons rotated about the origin by 270 degrees. 
+
+The test cases presented above, along with additional 2D mapping found in the paper (insert paper) can be found in this notebook: [![notebook](https://img.shields.io/static/v1?label=Run%20in&message=Google%20Colab&color=orange&logo=Google%20Cloud)](https://colab.research.google.com/github/atong01/conditional-flow-matching/blob/master/examples/notebooks/model-comparison-plotting.ipynb).
+
+Code to specifically generate the animation presented above can be found in `examples\models`.
 
 The density, vector field, and trajectories of simulation-free CNF training schemes: mapping 8 Gaussians to two moons (above) and a single Gaussian to two moons (below). Action matching with the same architecture (3x64 MLP with SeLU activations) underfits with the ReLU, SiLU, and SiLU activations as suggested in the [example code](https://github.com/necludov/jam), but it seems to fit better under our training setup (Action-Matching (Swish)).
 
