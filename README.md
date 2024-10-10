@@ -15,7 +15,7 @@ Conditional Variable Flow Matching (CVFM) is a robust extension to Flow Matching
 
 The trajectories and densities for mapping from a continuous conditioning mapping from two moons to two moons rotated about the origin by 270 degrees. Trajectories are colored by the conditioning variable associated with the mapping.
 
-The test cases presented above, along with additional 2D mapping found in the paper (insert paper) can be found in this notebook: [![notebook](https://img.shields.io/static/v1?label=Run%20in&message=Google%20Colab&color=orange&logo=Google%20Cloud)](https://colab.research.google.com/github/atong01/conditional-flow-matching/blob/master/examples/notebooks/model-comparison-plotting.ipynb). Code to specifically generate the animation presented above can be found in `examples\models`.
+The test cases presented above, along with additional 2D mapping found in the paper (insert paper) can be found in this notebook: [![notebook](https://img.shields.io/static/v1?label=Run%20in&message=Google%20Colab&color=orange&logo=Google%20Cloud)](https://colab.research.google.com/github/agenerale/conditional-variable-flow-matching/blob/master/examples/cvfm_tutorial.ipynb). Code to specifically generate the animation presented above can be found in `examples\models`.
 
 The density, vector field, and trajectories of simulation-free CNF training schemes: mapping 8 Gaussians to two moons (above) and a single Gaussian to two moons (below). Action matching with the same architecture (3x64 MLP with SeLU activations) underfits with the ReLU, SiLU, and SiLU activations as suggested in the [example code](https://github.com/necludov/jam), but it seems to fit better under our training setup (Action-Matching (Swish)).
 
