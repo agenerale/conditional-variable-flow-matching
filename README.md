@@ -19,8 +19,4 @@ The test cases presented above, along with additional 2D mapping found in the pa
 
 Code corresponding to the other 2D example problems can be found in `/toy_demos/8gauss_2moon.py` and `/toy_demos/8gauss_8gauss.py`.
 
-<p align="center">
-<img src="imgs/8gauss_to_8gauss.gif" width="800"/>
-<img src="imgs/8gauss_to_2moons.gif" width="800"/>
-</p>
 
