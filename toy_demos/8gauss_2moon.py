@@ -88,8 +88,8 @@ def plot_trajectories(traj, y):
     plt.scatter(traj[-1, :n, 0], traj[-1, :n, 1], s=4, alpha=1, c="maroon",zorder=10)
     #plt.legend([r"$p_0$", r"$x_{t} \vert x_{0}$", r"$p_1$"])
     plt.axis('off')
-    plt.xlim([-13,13])
-    plt.ylim([-13,13])
+    plt.xlim([-10,10])
+    plt.ylim([-10,10])
     plt.show()
     
 
@@ -325,7 +325,7 @@ device = torch.device("cuda")
 
 sigma = 0.1
 sigmay = 0.01
-oty = 10
+oty = 100
 dim = 2
 cdim = 1
 batch_size = 256
@@ -347,7 +347,7 @@ traj_cfm, y0_cfm = train_ode(model, params, method='cfm')
 
 sigma = 0.5
 sigmay = 0.01
-oty = 10
+oty = 100
 dim = 2
 cdim = 1
 batch_size = 256
@@ -383,20 +383,21 @@ def plot_trajectories_subplot(traj, y, title, j, ax):
         ax.plot(traj[:j, i, 0], traj[:j, i, 1], color=colors[i], alpha=0.1,zorder=0)
     ax.scatter(traj[j, :n, 0], traj[j, :n, 1], s=4, alpha=1, c="maroon",zorder=10)
     #ax.legend([r"$p_0$", r"$x_{t} \vert x_{0}$", r"$p_1$"])
-    ax.set_xlim([-13,13])
-    ax.set_ylim([-13,13])
+    ax.set_xlim([-10,10])
+    ax.set_ylim([-10,10])
     ax.axis('off')
+    ax.set_title(title)
     #ax.show()
         
 def plot_hist_subplot(traj, y, title, j, ax):
     n = 2000
     y = y[:n].astype('int')
         
-    ax.hist2d(*traj[j, :n, :].T, bins=256, range=((-13, 13), (-13, 13)))
+    ax.hist2d(*traj[j, :n, :].T, bins=256, range=((-10, 10), (-10, 10)))
     #ax.set_xticks([])
     #ax.set_yticks([])
-    ax.set_xlim([-13,13])
-    ax.set_ylim([-13,13])
+    ax.set_xlim([-10,10])
+    ax.set_ylim([-10,10])
     #ax.set_title(title)
     ax.axis('off')
 

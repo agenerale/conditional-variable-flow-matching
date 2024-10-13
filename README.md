@@ -21,4 +21,6 @@ Code corresponding to the other 2D example problems can be found in `/toy_demos/
 
 <p align="center">
 <img src="imgs/8gauss_to_8gauss.gif" width="600"/>
+<img src="imgs/8gauss_to_2moons.gif" width="600"/>
 </p>
+
