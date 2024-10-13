@@ -1,6 +1,6 @@
 This directory contains example code to duplicate 2D mappings with discrete and continuous conditioning variables. Each script runs through variants of conditional flow and score matching approaches detailed in the paper, specifically, CVFM, CVSFM, COT-FM, COT-SFM, CFM, CSFM.
 
-Each mapping can be run sweeping through the various approaches and generating a gif from the main page.
+Each mapping can be run sweeping through the various approaches and generating respective gifs contained in `/imgs/`.
 
 ```bash
 # Discrete conditioning - 8 Gaussians to 2 Moons
