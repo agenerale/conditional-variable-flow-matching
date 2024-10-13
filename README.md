@@ -10,7 +10,7 @@
 Conditional Variable Flow Matching (CVFM) is a robust extension to Flow Matching for training amortized conditional continuous normalizing flows (CNF). CVFM enables the disentanglement of conditional dynamics from unpaired training data, requiring only an $(x,y)$ pair observed at a given time. 
 
 <p align="center">
-<img src="imgs/2-moons_to_2-moons.gif" width="600"/>
+<img src="imgs/2-moons_to_2-moons.gif" width="800"/>
 </p>
 
 The trajectories and densities for mapping from a continuous conditioning mapping from two moons to two moons rotated about the origin by 270 degrees. Trajectories are colored by the conditioning variable associated with the mapping.
@@ -20,7 +20,7 @@ The test cases presented above, along with additional 2D mapping found in the pa
 Code corresponding to the other 2D example problems can be found in `/toy_demos/8gauss_2moon.py` and `/toy_demos/8gauss_8gauss.py`.
 
 <p align="center">
-<img src="imgs/8gauss_to_8gauss.gif" width="600"/>
-<img src="imgs/8gauss_to_2moons.gif" width="600"/>
+<img src="imgs/8gauss_to_8gauss.gif" width="800"/>
+<img src="imgs/8gauss_to_2moons.gif" width="800"/>
 </p>
 
