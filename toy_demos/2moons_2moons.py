@@ -316,7 +316,6 @@ batch_size = 256
 
 params = (sigma, sigmay, oty, batch_size)
 
-
 model = MLP(dim=dim, cdim=cdim).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 traj_cvfm, y0_cvfm = train_ode(model, params, method='cvfm')
@@ -367,7 +366,6 @@ def plot_trajectories_subplot(traj, y, title, j, ax):
         ax.plot(traj[:j, i, 0], traj[:j, i, 1], color=colors[i], alpha=0.1,zorder=0)
     ax.scatter(traj[j, :n, 0], traj[j, :n, 1], s=4, alpha=1, c="maroon",zorder=10)
     
-    #plt.legend([r"$p_0$", r"$x_{t} \vert x_{0}$", r"$p_1$"])
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_xlim([-5.5,5.5])
@@ -385,14 +383,12 @@ def plot_hist_subplot(traj, y, title, j, ax):
     ax.set_yticks([])
     ax.set_xlim([-5.5,5.5])
     ax.set_ylim([-5.5,5.5])
-    #ax.set_title(title)
     ax.axis('off')
 
 
 import matplotlib.animation as animation
 
 fig, axes = plt.subplots(2,6, figsize=(25,10), constrained_layout=True)
-#fig, axes = plt.subplots(2,6, constrained_layout=True)
 
 def animate(i):
     # ODE
