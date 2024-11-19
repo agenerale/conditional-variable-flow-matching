@@ -139,7 +139,6 @@ def train_ode(model, params, method='cvfm'):
         t = torch.nn.Sigmoid()(t)
         x0, y0 = sample_moons(batch_size, 0)
         x1, y1 = sample_moons(batch_size, 270)
-        #y0 = torch.linalg.norm(x0,dim=1)*(-1*y0)*torch.abs(x0[:,0]) + torch.linalg.norm(x0,dim=1)*(1 - y0)*torch.abs(x0[:,0])
         y0 = (x0[:,0] - 10)*(y0) + (1 - y0)*(x0[:,0] + 10)
             
         y1 = y0
