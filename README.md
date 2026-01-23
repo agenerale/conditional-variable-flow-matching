@@ -52,7 +52,7 @@ A. Generale, A. Robertson, S. Kalidindi. Conditional Variable Flow Matching: Tra
 
 ## Project Structure
 
-The directory structure looks like this:
+The directory structure is arranged as follows:
 
 ```
 │
