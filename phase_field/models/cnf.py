@@ -2,38 +2,116 @@ import torch
 import pytorch_lightning as pl
 import ot as pot
 import numpy as np
+import math
+
+class RMSNorm(torch.nn.Module):
+    def __init__(self, dim, eps=1e-8):
+        super().__init__()
+        self.scale = torch.nn.Parameter(torch.ones(dim))
+        self.eps = eps
+
+    def forward(self, x):
+        norm = torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
+        return x * norm * self.scale
+
+class AdaLN(torch.nn.Module):
+    def __init__(self, dim, cond_dim):
+        super().__init__()
+        self.norm = torch.nn.LayerNorm(dim, elementwise_affine=False)
+        self.scale = torch.nn.Linear(cond_dim, dim)
+        self.shift = torch.nn.Linear(cond_dim, dim)
+        
+        # Initialize to identity transformation
+        torch.nn.init.zeros_(self.scale.weight)
+        torch.nn.init.ones_(self.scale.bias)
+        torch.nn.init.zeros_(self.shift.weight)
+        torch.nn.init.zeros_(self.shift.bias)
+    
+    def forward(self, x, cond):
+        normalized = self.norm(x)
+        scale = self.scale(cond)
+        shift = self.shift(cond)
+        
+        while len(scale.shape) < len(x.shape):
+            scale = scale.unsqueeze(-2)
+            shift = shift.unsqueeze(-2)
+            
+        return normalized * (1 + scale) + shift
+
+class FrequencyEmbedding(torch.nn.Module):
+    def __init__(self, dim, max_period=10000):
+        super().__init__()
+        self.dim = dim
+        self.max_period = max_period
+        
+    def forward(self, t):
+        half_dim = self.dim // 2
+        freqs = torch.exp(
+            -math.log(self.max_period) * torch.arange(half_dim, dtype=torch.float32, device=t.device) / half_dim
+        )
+        args = t.float() * freqs[None]
+        embedding = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
+        
+        if self.dim % 2 == 1:
+            embedding = torch.cat([embedding, torch.zeros_like(embedding[:, :1])], dim=-1)
+            
+        return embedding
 
 class ResidualBlock(torch.nn.Module):
-    def __init__(self, in_dim, out_dim, w=512):
+    def __init__(self, in_dim, out_dim, cond_dim, w=512, use_adaln=True):
         super(ResidualBlock, self).__init__()
+        
+        self.use_adaln = use_adaln
         
         self.net = torch.nn.Sequential(
             torch.nn.Linear(in_dim, w),
-            torch.nn.LayerNorm(w),
+            RMSNorm(w) if not use_adaln else torch.nn.Identity(),
             torch.nn.GELU(),
             torch.nn.Linear(w, out_dim),
-            )
-        self.gelu = torch.nn.GELU()
-        self.ln = torch.nn.LayerNorm(out_dim)
+        )
         
-    def forward(self, x, yt):
+        if use_adaln:
+            self.adaln1 = AdaLN(w, cond_dim)
+            self.adaln2 = AdaLN(out_dim, cond_dim)
+        else:
+            self.ln = torch.nn.LayerNorm(out_dim)
+            
+        self.gelu = torch.nn.GELU()
+        
+    def forward(self, x, yt, cond=None):
         in_x = torch.cat([x, yt], -1)
         residual = x
-        out = self.net(in_x)
-        out += residual
-        out = self.ln(out)
+        
+        if self.use_adaln and cond is not None:
+            hidden = self.net[0](in_x)
+            hidden = self.adaln1(hidden, cond)
+            hidden = self.net[2](hidden)
+            out = self.net[3](hidden)
+            
+            out = out + residual
+            out = self.adaln2(out, cond)
+        else:
+            out = self.net(in_x)
+            out = out + residual
+            out = self.ln(out)
+            
         out = self.gelu(out)
         return out
-    
+
 class MLP(torch.nn.Module):
-    def __init__(self, dim, cdim, edim, layers=3, w=512, w_embed=32, num_heads=8):
+    def __init__(self, dim, cdim, edim, layers=3, w=512, w_embed=32, num_heads=8, use_adaln=True):
         super(MLP, self).__init__()
+        
+        self.use_adaln = use_adaln
         
         self.first_layer = torch.nn.Sequential(
             torch.nn.Linear(edim + dim, w),
-            torch.nn.LayerNorm(w),
+            RMSNorm(w) if not use_adaln else torch.nn.Identity(),
             torch.nn.GELU(),
         )
+        
+        if use_adaln:
+            self.first_adaln = AdaLN(w, edim)
         
         self.cond_emb_y = torch.nn.Sequential(
             torch.nn.Linear(cdim, edim),
@@ -41,54 +119,87 @@ class MLP(torch.nn.Module):
             torch.nn.GELU(),
         )
 
+        self.freq_emb_t = FrequencyEmbedding(edim)
         self.cond_emb_t = torch.nn.Sequential(
-            torch.nn.Linear(1, edim),
+            torch.nn.Linear(edim, edim),
             torch.nn.LayerNorm(edim),
             torch.nn.GELU(),
         )
 
         self.attn = torch.nn.MultiheadAttention(embed_dim=edim, num_heads=num_heads, batch_first=True)
         self.ln = torch.nn.LayerNorm(edim)
+        
+        self.cond_fusion = torch.nn.Sequential(
+            torch.nn.Linear(edim * 2, edim),
+            torch.nn.LayerNorm(edim),
+            torch.nn.GELU(),
+        )
           
         self.blocks = torch.nn.ModuleList()       
         for i in range(layers):
-            self.blocks.append(ResidualBlock(w + edim, w))
+            self.blocks.append(ResidualBlock(w + edim, w, edim, use_adaln=use_adaln))
 
         self.last_layer = torch.nn.Linear(w + edim, dim)
 
     def forward(self, x, y, t):
         y = self.cond_emb_y(y)
-        t = self.cond_emb_t(t)
+        
+        t_freq = self.freq_emb_t(t)
+        t = self.cond_emb_t(t_freq)
+        
+        cond = self.cond_fusion(torch.cat([y, t], dim=-1))
+        
+        y = y.unsqueeze(1)
+        t = t.unsqueeze(1)
+        
         y_residual = y
-        t_residual = t
-
         y = self.ln(y)
-        y, _ = self.attn(y, y, y)      # self-attention conditioning
-        y += y_residual
+        y, _ = self.attn(y, y, y)
+        y = y + y_residual
+        
         y_residual = y
-
         y = self.ln(y)
         t = self.ln(t)
-        yt, _ = self.attn(y, t, t)      # cross-attention conditoning / time
-        yt += y_residual + t_residual
-
+        yt, _ = self.attn(y, t, t)
+        yt = yt + y_residual
+        
+        yt = yt.squeeze(1)
+        
         in_x = torch.cat([x, yt], -1)
-        out = self.first_layer(in_x)
-
+        
+        if self.use_adaln:
+            out = self.first_layer[0](in_x)
+            out = self.first_adaln(out, cond)
+            out = self.first_layer[2](out)
+        else:
+            out = self.first_layer(in_x)
+        
         for i in range(len(self.blocks)):
-            out = self.blocks[i](out, yt)
-
+            out = self.blocks[i](out, yt, cond if self.use_adaln else None)
+        
         in_x = torch.cat([out, yt], -1)
         out = self.last_layer(in_x)
-
-        return out   
         
+        return out
+
 class CombinedModel(pl.LightningModule):  
-    def __init__(self, drift_model, score_model, hparams):
+    def __init__(self, hparams):
         super(CombinedModel, self).__init__()
         self.save_hyperparameters(hparams)
-        self.drift_model = drift_model
-        self.score_model = score_model
+        
+        self.drift_model = MLP(dim=hparams.ndim,
+                              cdim=hparams.cdim,
+                              edim=hparams.cond_emb,
+                              layers=hparams.drift_layers,
+                              w=hparams.drift_width,
+                              num_heads=hparams.n_attn)
+        self.score_model = MLP(dim=hparams.ndim,
+                              cdim=hparams.cdim,
+                              edim=hparams.cond_emb,
+                              layers=hparams.score_layers,
+                              w=hparams.score_width,
+                              num_heads=hparams.n_attn)
+        
     
     def forward(self, x, y, t):
         drift = self.drift_model(x, y, t)
@@ -96,19 +207,21 @@ class CombinedModel(pl.LightningModule):
         return drift, score
         
     def training_step(self, train_batch, batch_idx):
-        tx, ty, uf, xs, ys = train_batch
-
-        t0 = tx
-        t1 = ty
-        t = t0 + torch.rand(t0.shape[0], 1).to(self.device) * (t1 - t0)
-        ts = (t - t0) / (t1 - t0)
+        x = train_batch[0]
+        B, T, F = x.shape
+                
+        t0 = torch.randint(0, T-1, (1,)).item()  
+        t1 = t0 + 1
         
-        x0 = xs[:,self.hparams.cdim:]
-        x1 = ys[:,self.hparams.cdim:]
-        y0 = xs[:,:self.hparams.cdim]
-        y1 = ys[:,:self.hparams.cdim]
+        x0 = x[:, t0, :]
+        x1 = x[:, t1, :]
 
-        # Resample (x0, y0), (x1, y1) according to transport matrix
+        y0 = x0[:,:self.hparams.cdim]
+        y1 = x1[:,:self.hparams.cdim]                
+        x0 = x0[:,self.hparams.cdim:]
+        x1 = x1[:,self.hparams.cdim:]
+
+        # Resample (x0, y0), (x1, y1) via transport matrix
         M = torch.cdist(x0, x1) ** 2 + self.hparams.oty*torch.cdist(y0, y1) ** 2
         M = M / M.max()
         a, b = pot.unif(x0.shape[0]), pot.unif(x1.shape[0])
@@ -120,8 +233,11 @@ class CombinedModel(pl.LightningModule):
         x0 = x0[i]
         x1 = x1[j]
         y0 = y0[i]
-        y1 = y1[j]        
-
+        y1 = y1[j]
+        
+        t = t0 + torch.rand(x0.shape[0], 1).to(self.device) * (t1 - t0)
+        ts = (t - t0) / (t1 - t0)
+        
         # Construct estimate for velocity with conditional OT
         sigma_t = self.hparams.sigma * torch.sqrt(ts * (1 - ts))
         sigmay_t = self.hparams.sigmay * torch.sqrt(ts * (1 - ts))
@@ -142,7 +258,9 @@ class CombinedModel(pl.LightningModule):
         vt, st = self(xt, yt, t)
 
         # compute losses with stationary kernel weighting
-        err = torch.mean(torch.exp(-0.5*((y1 - y0) / self.hparams.sigmay)**2),dim=-1).unsqueeze(-1)
+        norm = torch.sum((y0 - y1) ** 2, dim=-1, keepdim=True)
+        err = torch.exp(-0.5*(norm / (self.hparams.sigmay**2))).unsqueeze(-1)
+        
         drift_loss = torch.mean(err*(vt - ut)**2) 
         score_loss = torch.mean(err*(lambda_t[:, None] * st + eps) ** 2)
         
@@ -161,7 +279,6 @@ class CombinedModel(pl.LightningModule):
                           
         return [optimizer], [scheduler] 
     
-
 class SDE(torch.nn.Module):
     noise_type = "diagonal"
     sde_type = "ito"
@@ -184,9 +301,6 @@ class SDE(torch.nn.Module):
         out = torch.ones_like(y) * self.sigma 
         out[:,0] = out[:,0]*self.sigma_fac
         return out
-
-def ema_avg(averaged_model_parameter, model_parameter, weight_decay=0.9999): return \
-    (1 - weight_decay) * averaged_model_parameter + weight_decay * model_parameter
 
 def autograd_trace(x_out, x_in, **kwargs):
     """Standard brute-force means of obtaining trace of the Jacobian, O(d) calls to autograd"""
