@@ -23,7 +23,7 @@ Code corresponding to the other 2D example problems can be found in `/toy_demos/
 
 This repository contains the code to reproduce the main experiments for CVFM:
 
-[Conditional Variable Flow Matching: Transforming Conditional Densities with Amortized Conditional Optimal Transport](https://arxiv.org/abs/2411.08314). This work introduces W **Conditional Variable Flow Matching** (CVFM), an extension to CFM which enables the disentanglement and modeling of conditional dynamics from unpaired training data.
+[Conditional Variable Flow Matching: Transforming Conditional Densities with Amortized Conditional Optimal Transport](https://arxiv.org/abs/2411.08314). This work introduces **Conditional Variable Flow Matching** (CVFM), an extension to CFM which enables the disentanglement and modeling of conditional dynamics from unpaired training data.
 
 If you find this code useful in your research, please cite us (expand for BibTeX):
 
@@ -48,6 +48,7 @@ A. Generale, A. Robertson, S. Kalidindi. Conditional Variable Flow Matching: Tra
 	keywords = {Computer Science - Machine Learning},
 }
 ```
+</details>
 
 ## Project Structure
 
