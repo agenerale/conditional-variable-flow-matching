@@ -55,7 +55,6 @@ A. Generale, A. Robertson, S. Kalidindi. Conditional Variable Flow Matching: Tra
 The directory structure looks like this:
 
 ```
-
 │
 ├── examples              <- Jupyter example notebooks
 │
