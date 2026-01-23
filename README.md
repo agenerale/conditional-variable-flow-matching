@@ -19,4 +19,55 @@ The test cases presented above, along with additional 2D mapping found in the pa
 
 Code corresponding to the other 2D example problems can be found in `/toy_demos/8gauss_2moon.py` and `/toy_demos/8gauss_8gauss.py`, while the presented materials microstructure evolution case study main code can be found in `/phase_field/main.py`.
 
+## How to cite
+
+This repository contains the code to reproduce the main experiments for CVFM:
+
+[Conditional Variable Flow Matching: Transforming Conditional Densities with Amortized Conditional Optimal Transport](https://arxiv.org/abs/2411.08314). This work introduces W **Conditional Variable Flow Matching** (CVFM), an extension to CFM which enables the disentanglement and modeling of conditional dynamics from unpaired training data.
+
+If you find this code useful in your research, please cite us (expand for BibTeX):
+
+<details>
+<summary>
+A. Generale, A. Robertson, S. Kalidindi. Conditional Variable Flow Matching: Transforming Conditional Densities with Amortized Conditional Optimal Transport, 2024.
+</summary>
+
+```bibtex
+@article{generale2024cvfm,
+	title = {Conditional {Variable} {Flow} {Matching}: {Transforming} {Conditional} {Densities} with {Amortized} {Conditional} {Optimal} {Transport}},
+	shorttitle = {Conditional {Variable} {Flow} {Matching}},
+	url = {http://arxiv.org/abs/2411.08314},
+	doi = {10.48550/arXiv.2411.08314},
+	abstract = {Forecasting stochastic nonlinear dynamical systems under the influence of conditioning variables is a fundamental challenge repeatedly encountered across the biological and physical sciences. While flow-based models can impressively predict the temporal evolution of probability distributions representing possible outcomes of a specific process, existing frameworks cannot satisfactorily account for the impact of conditioning variables on these dynamics. Amongst several limitations, existing methods require training data with paired conditions and are developed for discrete conditioning variables. We propose Conditional Variable Flow Matching (CVFM), a framework for learning flows transforming conditional distributions with amortization across continuous conditioning variables - permitting predictions across the conditional density manifold. This is accomplished through several novel advances. In particular, simultaneous sample conditioned flows over the main and conditioning variables. In addition, motivated by theoretical analysis, a conditional Wasserstein distance combined with a loss reweighting kernel facilitating conditional optimal transport. Collectively, these advances allow for learning system dynamics provided measurement data whose states and conditioning variables are not in correspondence. We demonstrate CVFM on a suite of increasingly challenging problems, including discrete and continuous conditional mapping benchmarks, image-to-image domain transfer, and modeling the temporal evolution of materials internal structure during manufacturing processes. We observe that CVFM results in improved performance and convergence characteristics over alternative conditional variants.},
+	urldate = {2024-12-08},
+	publisher = {arXiv},
+	author = {Generale, Adam P. and Robertson, Andreas E. and Kalidindi, Surya R.},
+	month = nov,
+	year = {2024},
+	note = {arXiv:2411.08314 [cs]},
+	keywords = {Computer Science - Machine Learning},
+}
+```
+
+## Project Structure
+
+The directory structure looks like this:
+
+```
+
+│
+├── examples              <- Jupyter example notebooks
+│
+│── phase_field           <- Material phase field evolution experiments
+│   ├── models            <- Model for material dynamics
+|   ├── main.py           <- Main execution script for training / evaluation
+|
+│── toy_demos             <- 2D discrete and continuous conditioning experiments
+│   ├── 2moons_2moons.py  
+│   ├── 8gauss_8gauss.py  
+│   ├── 8gauss_2moon.py  
+|
+└── README.md
+```
+
 
