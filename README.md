@@ -15,7 +15,7 @@ Conditional Variable Flow Matching (CVFM) is a robust extension to Flow Matching
 
 The trajectories and densities for mapping from a continuous conditioning mapping from two moons to two moons rotated about the origin by 90 degrees. Trajectories are colored by the conditioning variable associated with the mapping.
 
-The test cases presented above, along with additional 2D mapping found in the [paper](https://arxiv.org/abs/2411.08314) can be found in the notebook `examples/cvfm_tutorial.ipynb`: [![notebook](https://img.shields.io/static/v1?label=Run%20in&message=Google%20Colab&color=orange&logo=Google%20Cloud)](https://colab.research.google.com/github/agenerale/conditional-variable-flow-matching/blob/main/examples/cvfm_tutorial.ipynb). Code to specifically generate the animation presented above can be found in `/toy_demos/2moons_2moons.py`. 
+The test cases presented above, along with additional 2D mapping found in the paper [![CVFM Preprint](http://img.shields.io/badge/paper-arxiv.2302.00482-B31B1B.svg)](https://arxiv.org/abs/2411.08314) can be found in the notebook `examples/cvfm_tutorial.ipynb`: [![notebook](https://img.shields.io/static/v1?label=Run%20in&message=Google%20Colab&color=orange&logo=Google%20Cloud)](https://colab.research.google.com/github/agenerale/conditional-variable-flow-matching/blob/main/examples/cvfm_tutorial.ipynb). Code to specifically generate the animation presented above can be found in `/toy_demos/2moons_2moons.py`. 
 
 Code corresponding to the other 2D example problems can be found in `/toy_demos/8gauss_2moon.py` and `/toy_demos/8gauss_8gauss.py`, while the materials microstructure evolution case study main code can be found in `/phase_field/main.py`.
 
