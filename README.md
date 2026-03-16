@@ -58,15 +58,15 @@ The directory structure is arranged as follows:
 │
 ├── examples              <- Jupyter example notebooks
 │
-│── phase_field           <- Material phase field evolution experiments
+├── phase_field           <- Material phase field evolution experiments
 │   ├── models            <- Model for material dynamics
-|   ├── main.py           <- Main execution script for training / evaluation
-|
-│── toy_demos             <- 2D discrete and continuous conditioning experiments
+│   ├── main.py           <- Main execution script for training / evaluation
+│
+├── toy_demos             <- 2D discrete and continuous conditioning experiments
 │   ├── 2moons_2moons.py  
 │   ├── 8gauss_8gauss.py  
-│   ├── 8gauss_2moon.py  
-|
+│   ├── 8gauss_2moon.py   
+│
 └── README.md
 ```
 
